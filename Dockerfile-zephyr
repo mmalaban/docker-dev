@@ -11,13 +11,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     make gcc gcc-multilib g++-multilib libsdl2-dev libmagic1 \
     ca-certificates curl \
     gdb-multiarch \
-    openocd \
+    autoconf automake libtool pkg-config texinfo \
     stlink-tools \
     udev usbutils \
     libusb-1.0-0 libusb-1.0-0-dev \
     libftdi1-2 libftdi1-dev \
     libhidapi-hidraw0 libhidapi-dev \
     libjaylink0 libjaylink-dev \
+    libjim-dev \
     locales \
     && rm -rf /var/lib/apt/lists/*
 
@@ -49,7 +50,16 @@ RUN wget -q "https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${Z
 # Add Zephyr SDK toolchains to PATH
 ENV PATH="${ZEPHYR_SDK_INSTALL_DIR}/arm-zephyr-eabi/bin:${ZEPHYR_SDK_INSTALL_DIR}/riscv64-zephyr-elf/bin:${ZEPHYR_SDK_INSTALL_DIR}/xtensa-espressif_esp32_zephyr-elf/bin:${ZEPHYR_SDK_INSTALL_DIR}/xtensa-espressif_esp32s2_zephyr-elf/bin:${ZEPHYR_SDK_INSTALL_DIR}/xtensa-espressif_esp32s3_zephyr-elf/bin:${PATH}"
 
-# 4. Install West & Python Dependencies
+# 4. Build Espressif OpenOCD
+RUN git clone --depth 1 https://github.com/espressif/openocd-esp32.git /tmp/openocd-esp32 \
+    && cd /tmp/openocd-esp32 \
+    && ./bootstrap \
+    && ./configure --enable-esp-usb-jtag --disable-werror \
+    && make -j$(nproc) \
+    && make install \
+    && rm -rf /tmp/openocd-esp32
+
+# 5. Install West & Python Dependencies
 RUN pip3 install --break-system-packages west esptool
 
 # 5. Setup Zephyr Workspace (Freestanding Setup)
