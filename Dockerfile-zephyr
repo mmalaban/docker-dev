@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libjaylink0 libjaylink-dev \
     libjim-dev \
     locales \
+    tmux \
     && rm -rf /var/lib/apt/lists/*
 
 # 2. Set Locale (often required by build tools)
